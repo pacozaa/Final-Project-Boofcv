@@ -91,8 +91,8 @@ public class ColorSegment {
 		ShowImages.showWindow(output,"Showing "+name);
 	}
     public static void main(String[] args) {
-        BufferedImage image = UtilImageIO.loadImage("b.jpg");
-        //BufferedImage image = UtilImageIO.loadImage("Sunflowers.jpg");
+        //BufferedImage image = UtilImageIO.loadImage("b.jpg");
+        BufferedImage image = UtilImageIO.loadImage("Sunflowers.jpg");
 
 		// Let the user select a color
 		printClickedColor(image);
