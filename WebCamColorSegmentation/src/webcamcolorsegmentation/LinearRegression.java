@@ -37,6 +37,7 @@ public class LinearRegression {
     private final double svar, svar0, svar1;
 
    /**
+     * http://algs4.cs.princeton.edu/14analysis/LinearRegression.java.html
      * Performs a linear regression on the data points <tt>(y[i], x[i])</tt>.
      *
      * @param  x the values of the predictor variable
@@ -84,6 +85,10 @@ public class LinearRegression {
         svar  = rss / degreesOfFreedom;
         svar1 = svar / xxbar;
         svar0 = svar/N + xbar*xbar*svar1;
+    }
+
+    LinearRegression() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
    /**

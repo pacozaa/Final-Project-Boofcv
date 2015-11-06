@@ -20,11 +20,14 @@ import boofcv.struct.image.ImageFloat32;
 import boofcv.struct.image.MultiSpectral;
 import com.github.sarxos.webcam.Webcam;
 import georegression.metric.UtilAngle;
+import georegression.struct.point.Point2D_I32;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,11 +41,20 @@ public class WebCamColorSegmentation {
     static float saturation = 1f;
     static int ex;
     static int ey;
-
+    static double[] sx = {95,111,151,145,149,184,203,240};
+    static double[] sy = {450,404,381,360,237,175,108,25};
+                   
+    
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        //initialize LinearRegression
+        List<Point2D_I32> points = new ArrayList<Point2D_I32>(); 
+        for(int i = 0;i<sx.length;i++){
+            points.add(new Point2D_I32((int)sx[i],(int)sy[i]));
+        }
+        LinearRegression ln = null;
         // TODO code application logic here
         // tune the tracker for the image size and visual appearance        
         // Open a webcam at a resolution close to 640x480
@@ -118,10 +130,21 @@ public class WebCamColorSegmentation {
                 image = webcam.getImage();
                 float[] color = new float[3];
                 int rgb = image.getRGB(ex,ey);
+                System.out.println("X : "+ex+" Y : "+ey);
+                ln = new LinearRegression(sx,sy);
+                
                 ColorHsv.rgbToHsv((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, color);
-                System.out.println("H = " + color[0]+" S = "+color[1]+" V = "+color[2]);
+                //System.out.println("H = " + color[0]+" S = "+color[1]+" V = "+color[2]);
                 hue = color[0];
                 saturation = color[1];
+                Graphics2D g2 = image.createGraphics();
+                g2.setColor(Color.red);
+                g2.setStroke(new BasicStroke(10));
+                g2.drawLine(95,(int)ln.predict(95),480,(int)ln.predict(480));
+                
+                VisualizeFeatures.drawPoints(g2, Color.yellow, points, 10);
+                System.out.println("Height : "+image.getHeight());
+                System.out.println("Width : "+image.getWidth());
                 gui.setBufferedImageSafe(image);
             }
         }
