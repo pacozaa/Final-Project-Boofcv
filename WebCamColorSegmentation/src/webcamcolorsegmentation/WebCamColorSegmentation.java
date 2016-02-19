@@ -101,7 +101,7 @@ public class WebCamColorSegmentation {
                 // Extract hue and saturation bands which are independent of intensity
                 ImageFloat32 H = hsv.getBand(0);
                 ImageFloat32 S = hsv.getBand(1);
-
+                ImageFloat32 V = hsv.getBand(2);
                 // Adjust the relative importance of Hue and Saturation.
                 // Hue has a range of 0 to 2*PI and Saturation from 0 to 1.
                 float adjustUnits = (float) (Math.PI / 2.0);
@@ -110,6 +110,7 @@ public class WebCamColorSegmentation {
                 output = new BufferedImage(input.width, input.height, BufferedImage.TYPE_INT_RGB);
                 for (int y = 0; y < hsv.height; y++) {
                     for (int x = 0; x < hsv.width; x++) {
+                        V.set(x, y, 0);
                         // Hue is an angle in radians, so simple subtraction doesn't work
                         float dh = UtilAngle.dist(H.unsafe_get(x, y), hue);
                         float ds = (S.unsafe_get(x, y) - saturation) * adjustUnits;
@@ -117,8 +118,9 @@ public class WebCamColorSegmentation {
                         // this distance measure is a bit naive, but good enough for to demonstrate the concept
                         float dist2 = dh * dh + ds * ds;
                         if (dist2 <= maxDist2) {
-                            output.setRGB(x, y, image.getRGB(x, y));
+                            //output.setRGB(x, y, image.getRGB(x, y));
                         }
+                        output.setRGB(x, y, image.getRGB(x, y));
                     }
                 }
 
@@ -128,6 +130,8 @@ public class WebCamColorSegmentation {
                 gui.setBufferedImageSafe(output);
             } else {
                 image = webcam.getImage();
+                input = ConvertBufferedImage.convertFromMulti(image, null, true, ImageFloat32.class);
+                hsv = new MultiSpectral<ImageFloat32>(ImageFloat32.class, input.width, input.height, 3);                
                 float[] color = new float[3];
                 int rgb = image.getRGB(ex,ey);
                 System.out.println("X : "+ex+" Y : "+ey);

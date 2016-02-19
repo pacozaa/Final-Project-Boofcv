@@ -5,13 +5,8 @@
  */
 package webcamcolorsegmentation;
 
-import boofcv.abst.feature.detect.interest.ConfigGeneralDetector;
-import boofcv.abst.feature.tracker.PointTrack;
-import boofcv.abst.feature.tracker.PointTracker;
 import boofcv.alg.color.ColorHsv;
-import boofcv.alg.tracker.klt.PkltConfig;
 import boofcv.core.image.ConvertBufferedImage;
-import boofcv.factory.feature.tracker.FactoryPointTracker;
 import boofcv.gui.feature.VisualizeFeatures;
 import boofcv.gui.image.ImagePanel;
 import boofcv.gui.image.ShowImages;
@@ -82,7 +77,7 @@ public class WebCamColorSegmentation {
                 LinearRegression LeftLinear = null;                
                 LinearRegression RightLinear = null;
                 image = webcam.getImage();
-                input = ConvertBufferedImage.convertFromMulti(image, null, true, ImageFloat32.class);
+                input = ConvertBufferedImage.convertFromMulti(image, null, true, ImageFloat32.class);                
                 hsv = new MultiSpectral<ImageFloat32>(ImageFloat32.class, input.width, input.height, 3);
                 List<Point2D_I32> points = new ArrayList<Point2D_I32>(); 
                 // Convert into HSV
@@ -106,8 +101,8 @@ public class WebCamColorSegmentation {
                 List<Double> LeftLinearY = new ArrayList<Double>();
                 List<Double> RightLinearX = new ArrayList<Double>();
                 List<Double> RightLinearY = new ArrayList<Double>(); 
-                boolean isDetecedLeft = false;
-                boolean isDetecedRight = false;
+                boolean isDetectedLeft = false;
+                boolean isDetectedRight = false;
                 for (int y = 0; y < hsv.height; y++) {  
                     List<Integer[]> rowTargetXY = new ArrayList<Integer[]>(); 
                     for (int x = 0; x < hsv.width; x++) {
@@ -121,10 +116,10 @@ public class WebCamColorSegmentation {
                             output.setRGB(x, y, image.getRGB(x, y));                            
                             rowTargetXY.add(new Integer[]{x,y}); 
                             if(x < input.width/2){
-                             isDetecedLeft = true;   
+                             isDetectedLeft = true;   
                             }
                             if(x > input.width/2+1){
-                             isDetecedRight = true;
+                             isDetectedRight = true;
                             }                                                        
                         }                        
                     }                                        
@@ -177,7 +172,7 @@ public class WebCamColorSegmentation {
                 Graphics2D g2 = output.createGraphics();
                 g2.setColor(Color.BLUE);
                 g2.setStroke(new BasicStroke(5));
-                if(isDetecedLeft && isDetecedRight){
+                if(isDetectedLeft && isDetectedRight){
                     g2.drawLine(0,(int)LeftLinear.predict(0),input.width/2,(int)LeftLinear.predict(input.width/2));
                     g2.drawLine((input.width/2)+1,(int)RightLinear.predict((input.width/2)+1),input.width,(int)RightLinear.predict(input.width));
                 }                
