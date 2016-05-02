@@ -14,7 +14,6 @@ import boofcv.core.image.ConvertBufferedImage;
 import boofcv.io.image.UtilImageIO;
 import boofcv.struct.image.ImageFloat32;
 import boofcv.struct.image.ImageUInt8;
-import org.ddogleg.stats.UtilGaussian;
 
 import java.awt.image.BufferedImage;
 
@@ -64,13 +63,14 @@ public class Thresholding {
 
     public static void main(String[] args) {
         // example in which global thresholding works best
-        threshold("particles01.jpg");
+        //threshold("particles01.jpg");
         // example in which adaptive/local thresholding works best
-        threshold("uneven_lighting_squares.jpg");
+        //threshold("uneven_lighting_squares.jpg");
         // hand written text with non-uniform stained background
-        threshold("stained_handwriting.jpg");
-        threshold("a.jpg");
-        threshold("b.jpg");
+        //threshold("stained_handwriting.jpg");
+        threshold("1.png");
+        threshold("2.png");
+        threshold("3.png");
     }
 
 }
