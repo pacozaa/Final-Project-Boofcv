@@ -199,8 +199,7 @@ public class CornPlantTunnelGuide {
                         }
                     }                                                                                                                        
                 }
-//            ShowImages.showWindow(output,"Before FilterBlured ");
-//            output = GaussianBlurGray(ConvertBufferedImage.convertFromSingle(output, null, GrayU8.class));          
+            ShowImages.showWindow(output,"Before FilterBlured ");            
             output = GaussianBlurPlanar(ConvertBufferedImage.convertFromMulti(output, null, true, GrayU8.class));          
             ShowImages.showWindow(output,"After FilterBlured ");
             return output;
@@ -321,7 +320,7 @@ public class CornPlantTunnelGuide {
 		ShowImages.showWindow(output,"Showing "+name);
 	}
     public static void main(String[] args) {        
-        BufferedImage image = UtilImageIO.loadImage("2.png");
+        BufferedImage image = UtilImageIO.loadImage("1.png");
         	
         printClickedColor(image);
     }
@@ -364,13 +363,13 @@ public class CornPlantTunnelGuide {
     }
     
     private static BufferedImage GaussianBlurPlanar(Planar<GrayU8> input ) {
-        int blurRadius = 8;
+        int blurRadius = 6;
         Planar<GrayU8> blurred = input.createSameShape();
         BufferedImage output = new BufferedImage(input.width,input.height,BufferedImage.TYPE_INT_RGB);
         // Apply Gaussian blur to each band in the image
-//       BlurImageOps.gaussian(input,blurred,-1,blurRadius,null);
-        BlurImageOps.median(input, blurred, blurRadius);
-//      BlurImageOps.mean(input.getBand(i), blurred.getBand(i), blurRadius, null);
+       BlurImageOps.gaussian(input,blurred,-1,blurRadius,null);
+        BlurImageOps.median(blurred, blurred, blurRadius);
+//        BlurImageOps.mean(blurred, blurred, blurRadius, null);
 
         ConvertBufferedImage.convertTo(blurred, output,true);
         return output;
