@@ -6,18 +6,13 @@
 package cornplant;
 
 import boofcv.alg.color.ColorHsv;
-import boofcv.alg.filter.binary.BinaryImageOps;
 import boofcv.alg.filter.blur.BlurImageOps;
-import boofcv.alg.filter.derivative.GradientSobel;
-import boofcv.core.image.border.FactoryImageBorderAlgs;
 import boofcv.io.image.ConvertBufferedImage;
 import boofcv.gui.feature.VisualizeFeatures;
 import boofcv.gui.image.ImagePanel;
 import boofcv.gui.image.ShowImages;
-import boofcv.gui.image.VisualizeImageData;
 import boofcv.io.image.UtilImageIO;
 import boofcv.struct.image.GrayF32;
-import boofcv.struct.image.GrayS16;
 import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.Planar;
 
@@ -32,8 +27,13 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 
 /**
  * Example which demonstrates how color can be used to segment an image.  The color space is converted from RGB into
@@ -48,6 +48,7 @@ public class CornPlantTunnelGuide {
 	 * Shows a color image and allows the user to select a pixel, convert it to HSV, print
 	 * the HSV values, and calls the function below to display similar pixels.
 	 */        
+        private static String filename = "10";
 	public static void printClickedColor( final BufferedImage image ) {
 		ImagePanel gui = new ImagePanel(image);
 		gui.addMouseListener(new MouseAdapter() {
@@ -58,19 +59,33 @@ public class CornPlantTunnelGuide {
 				ColorHsv.rgbToHsv((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, color);
 				System.out.println("H = " + color[0]+" S = "+color[1]+" V = "+color[2]);
                                 // Euclidean distance squared threshold for deciding which pixels are members of the selected set
-                                float maxDist2 = 0.4f*0.4f;  
-                                BufferedImage imageFiltered = FilterBlur(image,color[0],color[1],maxDist2);
-//                                DetectTunnelGuidePattern("Selected",imageFiltered,color[0],color[1],maxDist2); 
-                                DetectCenterGravity("Selected",imageFiltered);
+                                float maxDist2 = 0.8f*0.8f;  
+                                BufferedImage imageFiltered = null;
+                                try {
+                                    imageFiltered = FilterBlur(image,color[0],color[1],maxDist2);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(CornPlantTunnelGuide.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                                try {
+                                    //DetectTunnelGuidePattern("Selected",imageFiltered,color[0],color[1],maxDist2);
+                                    DetectCenterGravity("Selected",imageFiltered);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(CornPlantTunnelGuide.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                                 ColorHsv.hsvToRgb(color[0], color[1], color[2], color);
                                 System.out.println("R = " + color[0]+" G = "+color[1]+" B = "+color[2]);				                                
 			}
 
                     
-		});                
-		ShowImages.showWindow(gui,"Color Selector");
+		});                      
+                Planar<GrayF32> input = ConvertBufferedImage.convertFromMulti(image,null,true,GrayF32.class); 
+                Planar<GrayF32> blurred = input.createSameShape();                
+                BlurImageOps.gaussian(input,blurred,-1,10,null);
+                BlurImageOps.median(blurred, blurred, 10);
+                ShowImages.showWindow(blurred,"blurred_all");
+		ShowImages.showWindow(gui,"Color Selector");                
 	}
-        private static void DetectCenterGravity(String name , BufferedImage image) {
+        private static void DetectCenterGravity(String name , BufferedImage image) throws IOException {
             Planar<GrayF32> input = ConvertBufferedImage.convertFromMulti(image,null,true,GrayF32.class);            
             BufferedImage output = new BufferedImage(input.width,input.height,BufferedImage.TYPE_INT_RGB);            
             List<Point2D_I32> gravityPoints = new ArrayList<Point2D_I32>(); 
@@ -83,7 +98,7 @@ public class CornPlantTunnelGuide {
                int sumPixelNumber = 0;
                int sumDetectRow = 0;
                for (int x = 0; x < input.width; x++) {      
-                   if (input.getBand(2).get(x, y) >= 150) {                         
+                   if (input.getBand(2).get(x, y) >= 100) {                         
                        sumPixelNumber+=x;
                        sumDetectRow++;
                        output.setRGB(x, y, 255);
@@ -111,6 +126,7 @@ public class CornPlantTunnelGuide {
                 VisualizeFeatures.drawPoint(g2, (int)centerLinear.predict(LinearY.get(0)), LinearY.get(0).intValue(), Color.yellow);
             }            
             ShowImages.showWindow(output, name);
+            ImageIO.write(output, "png", new File(filename+"_draw.png"));
         }
         public static Point2D.Float getIntersectionPoint(Line2D.Float line1, Line2D.Float line2) {
           //if (! line1.intersectsLine(line2) ) return null;
@@ -174,7 +190,7 @@ public class CornPlantTunnelGuide {
             ShowImages.showWindow(output,"After FilterAreaPercent ");
             return output;
         }
-        public static BufferedImage FilterBlur(BufferedImage image, float hue, float saturation, float maxDist2) {
+        public static BufferedImage FilterBlur(BufferedImage image, float hue, float saturation, float maxDist2) throws IOException {
             Planar<GrayF32> input = ConvertBufferedImage.convertFromMulti(image,null,true,GrayF32.class);
             Planar<GrayF32> hsv = new Planar<GrayF32>(GrayF32.class,input.width,input.height,3);
             BufferedImage output = new BufferedImage(input.width,input.height,BufferedImage.TYPE_INT_RGB);
@@ -199,9 +215,11 @@ public class CornPlantTunnelGuide {
                         }
                     }                                                                                                                        
                 }
-            ShowImages.showWindow(output,"Before FilterBlured ");            
+            ShowImages.showWindow(output,"Before FilterBlured ");   
+            ImageIO.write(output, "png", new File(filename+"_before_blurred.png"));
             output = GaussianBlurPlanar(ConvertBufferedImage.convertFromMulti(output, null, true, GrayU8.class));          
             ShowImages.showWindow(output,"After FilterBlured ");
+            ImageIO.write(output, "png", new File(filename+"_after.png"));
             return output;
         }
         public static void DetectTunnelGuidePattern( String name , BufferedImage image , float hue , float saturation, float maxDist2 ) {
@@ -320,7 +338,7 @@ public class CornPlantTunnelGuide {
 		ShowImages.showWindow(output,"Showing "+name);
 	}
     public static void main(String[] args) {        
-        BufferedImage image = UtilImageIO.loadImage("1.png");
+        BufferedImage image = UtilImageIO.loadImage(filename+".png");
         	
         printClickedColor(image);
     }
@@ -350,24 +368,12 @@ public class CornPlantTunnelGuide {
         }
         return result;
     }
-
-    private static BufferedImage GaussianBlurGray(GrayU8 input ) {
-        int blurRadius = 1;
-        GrayU8 blurred = new GrayU8(input.width,input.height);
-
-        // Gaussian blur: Convolve a Gaussian kernel
-//        BlurImageOps.gaussian(input,blurred,-1,blurRadius,null);
-        BlurImageOps.median(input, blurred, blurRadius);
-//        BlurImageOps.mean(input, blurred, blurRadius, null);        
-        return ConvertBufferedImage.convertTo(blurred, null);
-    }
-    
     private static BufferedImage GaussianBlurPlanar(Planar<GrayU8> input ) {
-        int blurRadius = 6;
+        int blurRadius = 20;
         Planar<GrayU8> blurred = input.createSameShape();
         BufferedImage output = new BufferedImage(input.width,input.height,BufferedImage.TYPE_INT_RGB);
         // Apply Gaussian blur to each band in the image
-       BlurImageOps.gaussian(input,blurred,-1,blurRadius,null);
+        BlurImageOps.gaussian(input,blurred,0,blurRadius,null);
         BlurImageOps.median(blurred, blurred, blurRadius);
 //        BlurImageOps.mean(blurred, blurred, blurRadius, null);
 
