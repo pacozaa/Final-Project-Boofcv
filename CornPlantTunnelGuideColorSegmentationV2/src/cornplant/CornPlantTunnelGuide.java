@@ -48,16 +48,17 @@ public class CornPlantTunnelGuide {
 	 * Shows a color image and allows the user to select a pixel, convert it to HSV, print
 	 * the HSV values, and calls the function below to display similar pixels.
 	 */        
-        private static String filename = "10";
+        private static String filename = "sample-images/35";
 	public static void printClickedColor( final BufferedImage image ) {
-		ImagePanel gui = new ImagePanel(image);
-		gui.addMouseListener(new MouseAdapter() {
+		ImagePanel gui1 = new ImagePanel(image);
+		gui1.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				float[] color = new float[3];
 				int rgb = image.getRGB(e.getX(),e.getY());
+                                System.out.println("X is :"+e.getX()+" Y is :"+e.getY());
 				ColorHsv.rgbToHsv((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, color);
-				System.out.println("H = " + color[0]+" S = "+color[1]+" V = "+color[2]);
+//				System.out.println("H = " + color[0]+" S = "+color[1]+" V = "+color[2]);
                                 // Euclidean distance squared threshold for deciding which pixels are members of the selected set
                                 float maxDist2 = 0.8f*0.8f;  
                                 BufferedImage imageFiltered = null;
@@ -73,17 +74,27 @@ public class CornPlantTunnelGuide {
                                     Logger.getLogger(CornPlantTunnelGuide.class.getName()).log(Level.SEVERE, null, ex);
                                 }
                                 ColorHsv.hsvToRgb(color[0], color[1], color[2], color);
-                                System.out.println("R = " + color[0]+" G = "+color[1]+" B = "+color[2]);				                                
+//                                System.out.println("R = " + color[0]+" G = "+color[1]+" B = "+color[2]);				                                
 			}
 
                     
 		});                      
                 Planar<GrayF32> input = ConvertBufferedImage.convertFromMulti(image,null,true,GrayF32.class); 
                 Planar<GrayF32> blurred = input.createSameShape();                
-                BlurImageOps.gaussian(input,blurred,-1,10,null);
-                BlurImageOps.median(blurred, blurred, 10);
-                ShowImages.showWindow(blurred,"blurred_all");
-		ShowImages.showWindow(gui,"Color Selector");                
+                BlurImageOps.gaussian(input,blurred,-1,5,null);
+                BlurImageOps.median(blurred, blurred, 5);
+                ImagePanel gui2 = new ImagePanel(ConvertBufferedImage.convertTo_F32(blurred, null, true));
+                gui2.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {				
+                            float rBand = blurred.getBand(0).get(e.getX(),e.getY());
+                            float gBand = blurred.getBand(1).get(e.getX(),e.getY());
+                            float bBand = blurred.getBand(2).get(e.getX(),e.getY());
+                            System.out.println("R-band : "+rBand+" ,G-band : "+gBand+" ,B-band : "+bBand);
+			}                    
+		});                      
+//                ShowImages.showWindow(gui2,"blurred_all");
+		ShowImages.showWindow(gui1,"Color Selector");                
 	}
         private static void DetectCenterGravity(String name , BufferedImage image) throws IOException {
             Planar<GrayF32> input = ConvertBufferedImage.convertFromMulti(image,null,true,GrayF32.class);            
@@ -124,6 +135,7 @@ public class CornPlantTunnelGuide {
             if(gravityPoints.size() > 0){
                 VisualizeFeatures.drawPoints(g2, Color.white, gravityPoints, 1);
                 VisualizeFeatures.drawPoint(g2, (int)centerLinear.predict(LinearY.get(0)), LinearY.get(0).intValue(), Color.yellow);
+                System.out.println("Point X is: "+(int)centerLinear.predict(LinearY.get(0))+" Point Y is: "+LinearY.get(0).intValue());
             }            
             ShowImages.showWindow(output, name);
             ImageIO.write(output, "png", new File(filename+"_draw.png"));
@@ -154,8 +166,7 @@ public class CornPlantTunnelGuide {
             Planar<GrayF32> hsv = new Planar<GrayF32>(GrayF32.class,input.width,input.height,3);
             BufferedImage output = new BufferedImage(input.width,input.height,BufferedImage.TYPE_INT_RGB);
             // Convert into HSV
-            ColorHsv.rgbToHsv_F32(input,hsv);
-            System.out.println("width : "+input.width+" height : "+input.height);
+            ColorHsv.rgbToHsv_F32(input,hsv);           
             // Extract hue and saturation bands which are independent of intensity
             GrayF32 H = hsv.getBand(0);
             GrayF32 S = hsv.getBand(1);
@@ -195,8 +206,7 @@ public class CornPlantTunnelGuide {
             Planar<GrayF32> hsv = new Planar<GrayF32>(GrayF32.class,input.width,input.height,3);
             BufferedImage output = new BufferedImage(input.width,input.height,BufferedImage.TYPE_INT_RGB);
             // Convert into HSV
-            ColorHsv.rgbToHsv_F32(input,hsv);
-            System.out.println("width : "+input.width+" height : "+input.height);
+            ColorHsv.rgbToHsv_F32(input,hsv);            
             // Extract hue and saturation bands which are independent of intensity
             GrayF32 H = hsv.getBand(0);
             GrayF32 S = hsv.getBand(1);
