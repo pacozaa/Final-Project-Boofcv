@@ -48,7 +48,7 @@ public class CornPlantTunnelGuide {
 	 * Shows a color image and allows the user to select a pixel, convert it to HSV, print
 	 * the HSV values, and calls the function below to display similar pixels.
 	 */        
-        private static String filename = "sample-images/35";
+        private static String filename = "sample-images/4";
 	public static void printClickedColor( final BufferedImage image ) {
 		ImagePanel gui1 = new ImagePanel(image);
 		gui1.addMouseListener(new MouseAdapter() {
@@ -74,7 +74,7 @@ public class CornPlantTunnelGuide {
                                     Logger.getLogger(CornPlantTunnelGuide.class.getName()).log(Level.SEVERE, null, ex);
                                 }
                                 ColorHsv.hsvToRgb(color[0], color[1], color[2], color);
-//                                System.out.println("R = " + color[0]+" G = "+color[1]+" B = "+color[2]);				                                
+                                System.out.println("R = " + color[0]+" G = "+color[1]+" B = "+color[2]);				                                
 			}
 
                     
