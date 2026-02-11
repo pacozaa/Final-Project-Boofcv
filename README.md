@@ -4,7 +4,7 @@ A collection of computer vision applications built with BoofCV library, focusing
 
 ## Overview
 
-This repository contains multiple Java-based computer vision applications that utilize the BoofCV (Boofcv Computer Vision) library for image processing tasks. The primary focus is on agricultural applications, specifically corn plant detection, segmentation, and analysis.
+This repository contains multiple Java-based computer vision applications that utilize the BoofCV (BoofCV Computer Vision) library for image processing tasks. The primary focus is on agricultural applications, specifically corn plant detection, segmentation, and analysis.
 
 ## Project Structure
 
